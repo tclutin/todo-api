@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log/slog"
 	"os"
 	"todo/internal/app"
@@ -8,6 +9,7 @@ import (
 	"todo/internal/handler"
 	"todo/internal/note"
 	"todo/internal/repository"
+	"todo/pkg/client/postgresql"
 )
 
 func main() {
@@ -17,8 +19,11 @@ func main() {
 	//Initializing the logger
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
+	//Initializing pgxpool
+	pgxPool := postgresql.NewClient(context.Background(), "")
+
 	//Initializing the noteRepo
-	noteRepository := repository.NewNoteRepository(nil)
+	noteRepository := repository.NewNoteRepository(pgxPool)
 
 	//Initializing the note service
 	noteService := note.NewService(logger, noteRepository)
@@ -29,5 +34,6 @@ func main() {
 	//Initializing the app
 	app := app.New(cfg, logger, router.InitNotesRoutes())
 
+	//start app
 	app.Run()
 }

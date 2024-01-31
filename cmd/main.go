@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"os"
 	"todo/internal/app"
@@ -20,7 +21,8 @@ func main() {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 	//Initializing pgxpool
-	pgxPool := postgresql.NewClient(context.Background(), "")
+	connToPGQ := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s", cfg.DBConfig.Username, cfg.DBConfig.Password, cfg.DBConfig.Host, cfg.DBConfig.Port, cfg.DBConfig.Database)
+	pgxPool := postgresql.NewClient(context.Background(), connToPGQ)
 
 	//Initializing the noteRepo
 	noteRepository := repository.NewNoteRepository(pgxPool)

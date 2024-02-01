@@ -97,6 +97,31 @@ func (n *noteRepository) UpdateNote(ctx context.Context, entity note.Note) (note
 	return note, nil
 }
 
+func (n *noteRepository) GetAllNotes(ctx context.Context) ([]note.Note, error) {
+	sql := `SELECT * FROM todo`
+
+	n.logger.Info("sql query:", strings.ReplaceAll(sql, "\t", ""))
+
+	rows, err := n.client.Query(ctx, sql)
+	if err != nil {
+		n.logger.Error("the query was unsuccessful", err)
+		return nil, err
+	}
+
+	notes := make([]note.Note, 0)
+
+	for rows.Next() {
+		var note note.Note
+
+		err = rows.Scan(&note.ID, &note.Name, &note.Content, &note.IsDone, &note.CreatedAt, &note.UpdateAt)
+		if err != nil {
+			return nil, err
+		}
+		notes = append(notes, note)
+	}
+	return notes, err
+}
+
 func NewNoteRepository(database *pgxpool.Pool, logger *slog.Logger) *noteRepository {
 	return &noteRepository{client: database, logger: logger}
 }

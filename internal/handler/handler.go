@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -15,6 +14,7 @@ type NoteService interface {
 	CreateNote(context.Context, note.CreateNoteDTO) (note.Note, error)
 	UpdateNote(context.Context, note.UpdateNoteDTO) (note.Note, error)
 	GetNoteByID(context.Context, uint64) (note.Note, error)
+	GetAllNotes(ctx context.Context) ([]note.Note, error)
 }
 
 type Handler struct {
@@ -84,22 +84,45 @@ func (h *Handler) UpdateNote(writer http.ResponseWriter, request *http.Request) 
 }
 
 func (h *Handler) GetNoteByID(writer http.ResponseWriter, request *http.Request) {
+	writer.Header().Set("Content-Type", "application/json")
 	if request.Method != http.MethodGet {
 		writer.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 
-	id := request.URL.Query().Get("id")
-	value, err := strconv.ParseUint(id, 10, 64)
+	value := request.URL.Query().Get("id")
+	id, err := strconv.ParseUint(value, 10, 64)
 	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	fmt.Println(value)
+
+	got, err := h.noteService.GetNoteByID(request.Context(), id)
+	if err != nil {
+		h.logger.Error(err.Error())
+		custom.SendJSON[string](writer, http.StatusBadRequest, err.Error())
+		return
+	}
+	custom.SendJSON[note.Note](writer, http.StatusOK, got)
+	return
 }
 
 func (h *Handler) GetAllNotes(writer http.ResponseWriter, request *http.Request) {
+	writer.Header().Set("Content-Type", "application/json")
+	if request.Method != http.MethodGet {
+		writer.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
+	notes, err := h.noteService.GetAllNotes(request.Context())
+	if err != nil {
+		h.logger.Error(err.Error())
+		custom.SendJSON[string](writer, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	custom.SendJSON[[]note.Note](writer, http.StatusOK, notes)
+	return
 }
 
 func (h *Handler) DeleteNote(writer http.ResponseWriter, request *http.Request) {

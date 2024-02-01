@@ -11,6 +11,7 @@ type NoteRepository interface {
 	CreateNote(context.Context, Note) (Note, error)
 	UpdateNote(context.Context, Note) (Note, error)
 	GetNoteById(context.Context, uint64) (Note, error)
+	GetAllNotes(context.Context) ([]Note, error)
 }
 
 type service struct {
@@ -88,14 +89,21 @@ func (s *service) Delete(ctx context.Context, dto UpdateNoteDTO) error {
 	return nil
 }
 
-func (s *service) GetAll(ctx context.Context, dto UpdateNoteDTO) error {
+func (s *service) GetAllNotes(ctx context.Context) ([]Note, error) {
+	notes, err := s.repo.GetAllNotes(ctx)
+	if err != nil {
+		return nil, errors.New("internal database error")
+	}
 
-	return nil
+	return notes, err
 }
 
 func (s *service) GetNoteByID(ctx context.Context, id uint64) (Note, error) {
-
-	return Note{}, nil
+	note, err := s.repo.GetNoteById(ctx, id)
+	if err != nil {
+		return Note{}, errors.New("internal database error")
+	}
+	return note, nil
 }
 
 func NewService(logger *slog.Logger, repo NoteRepository) *service {

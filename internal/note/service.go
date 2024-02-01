@@ -11,6 +11,7 @@ type NoteRepository interface {
 	CreateNote(context.Context, Note) (Note, error)
 	UpdateNote(context.Context, Note) (Note, error)
 	GetNoteById(context.Context, uint64) (Note, error)
+	DeleteNote(context.Context, uint64) error
 	GetAllNotes(context.Context) ([]Note, error)
 }
 
@@ -84,8 +85,15 @@ func (s *service) UpdateNote(ctx context.Context, dto UpdateNoteDTO) (Note, erro
 	return updatedNote, nil
 }
 
-func (s *service) Delete(ctx context.Context, dto UpdateNoteDTO) error {
+func (s *service) DeleteNote(ctx context.Context, id uint64) error {
+	_, err := s.GetNoteByID(ctx, id)
+	if err != nil {
+		return errors.New("the note was not found")
+	}
 
+	if err = s.repo.DeleteNote(ctx, id); err != nil {
+		return errors.New("internal database error")
+	}
 	return nil
 }
 

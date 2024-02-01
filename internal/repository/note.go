@@ -53,6 +53,15 @@ func (n *noteRepository) CreateNote(ctx context.Context, entity note.Note) (note
 	return note, nil
 }
 
+func (n *noteRepository) DeleteNote(ctx context.Context, id uint64) error {
+	sql := `DELETE FROM todo WHERE id = $1`
+	_, err := n.client.Exec(ctx, sql, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (n *noteRepository) GetNoteById(ctx context.Context, id uint64) (note.Note, error) {
 	sql := `
 			SELECT * FROM todo
@@ -119,6 +128,7 @@ func (n *noteRepository) GetAllNotes(ctx context.Context) ([]note.Note, error) {
 		}
 		notes = append(notes, note)
 	}
+	n.logger.Info("the query was successful")
 	return notes, err
 }
 

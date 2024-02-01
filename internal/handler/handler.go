@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -14,6 +15,7 @@ type NoteService interface {
 	CreateNote(context.Context, note.CreateNoteDTO) (note.Note, error)
 	UpdateNote(context.Context, note.UpdateNoteDTO) (note.Note, error)
 	GetNoteByID(context.Context, uint64) (note.Note, error)
+	DeleteNote(ctx context.Context, uint642 uint64) error
 	GetAllNotes(ctx context.Context) ([]note.Note, error)
 }
 
@@ -127,6 +129,25 @@ func (h *Handler) GetAllNotes(writer http.ResponseWriter, request *http.Request)
 
 func (h *Handler) DeleteNote(writer http.ResponseWriter, request *http.Request) {
 	writer.Header().Set("Content-Type", "application/json")
+	if request.Method != http.MethodDelete {
+		writer.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	value := request.URL.Query().Get("id")
+	fmt.Println(value)
+	id, err := strconv.ParseUint(value, 10, 64)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err = h.noteService.DeleteNote(request.Context(), id); err != nil {
+		h.logger.Error(err.Error())
+		custom.SendJSON[string](writer, http.StatusBadRequest, err.Error())
+		return
+	}
+	custom.SendJSON[string](writer, http.StatusOK, "Succesfully")
 }
 
 func New(logger *slog.Logger, service NoteService) Handler {

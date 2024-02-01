@@ -11,7 +11,7 @@ import (
 )
 
 type NoteService interface {
-	Create(context.Context, note.CreateNoteDTO) (note.Note, error)
+	CreateNote(context.Context, note.CreateNoteDTO) (note.Note, error)
 	Update(context.Context, note.UpdateNoteDTO) error
 }
 
@@ -20,7 +20,7 @@ type Handler struct {
 	noteService NoteService
 }
 
-func (h Handler) InitNotesRoutes() *http.ServeMux {
+func (h *Handler) InitNotesRoutes() *http.ServeMux {
 	router := http.NewServeMux()
 	router.HandleFunc("/note/create", h.CreateNote)
 	router.HandleFunc("/note/get/", h.GetNote)
@@ -45,14 +45,14 @@ func (h *Handler) CreateNote(writer http.ResponseWriter, request *http.Request) 
 	}
 	defer request.Body.Close()
 
-	ob, err := h.noteService.Create(request.Context(), dto)
+	created, err := h.noteService.CreateNote(request.Context(), dto)
 	if err != nil {
 		h.logger.Error(err.Error())
 		custom.SendJSON[string](writer, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	custom.SendJSON[note.Note](writer, http.StatusCreated, ob)
+	custom.SendJSON[note.Note](writer, http.StatusCreated, created)
 	return
 }
 

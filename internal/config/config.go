@@ -10,15 +10,7 @@ import (
 type Config struct {
 	Host string `env:"HOST" env-default:"localhost"`
 	Port string `env:"PORT" env-default:"25565"`
-	DBConfig
-}
-
-type DBConfig struct {
-	Host     string `env:"DB_HOST" env-required:"true"`
-	Port     string `env:"DB_PORT" env-required:"true"`
-	Username string `env:"DB_USERNAME" env-required:"true"`
-	Password string `env:"DB_PASSWORD" env-required:"true"`
-	Database string `env:"DB_NAME" env-required:"true"`
+	DB   string `env:"DB" env-required:"true"`
 }
 
 func MustLoad() *Config {

@@ -18,7 +18,12 @@ type Client interface {
 func NewClient(ctx context.Context, strToConnect string) *pgxpool.Pool {
 	pool, err := pgxpool.New(ctx, strToConnect)
 	if err != nil {
-		log.Fatalln("failed to connect to postgresql")
+		log.Fatalln("failed to connect to postgresql", err)
+	}
+
+	err = pool.Ping(ctx)
+	if err != nil {
+		log.Fatalln(err)
 	}
 	return pool
 }

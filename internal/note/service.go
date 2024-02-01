@@ -9,7 +9,7 @@ import (
 )
 
 type NoteRepository interface {
-	Create(entity Note) error
+	CreateNote(context.Context, Note) (Note, error)
 }
 
 type service struct {
@@ -17,9 +17,9 @@ type service struct {
 	repo   NoteRepository
 }
 
-func (s *service) Create(ctx context.Context, dto CreateNoteDTO) (Note, error) {
+func (s *service) CreateNote(ctx context.Context, dto CreateNoteDTO) (Note, error) {
 	if !dto.Validate() {
-		return Note{}, errors.New("fiels must have values")
+		return Note{}, errors.New("fields must have values")
 	}
 
 	if len(dto.Name) > 10 || len(dto.Name) < 3 {
@@ -30,7 +30,7 @@ func (s *service) Create(ctx context.Context, dto CreateNoteDTO) (Note, error) {
 		return Note{}, errors.New("field content must be x<20")
 	}
 
-	note := Note{
+	model := Note{
 		Name:      dto.Name,
 		Content:   dto.Content,
 		IsDone:    false,
@@ -38,8 +38,9 @@ func (s *service) Create(ctx context.Context, dto CreateNoteDTO) (Note, error) {
 		UpdateAt:  time.Now(),
 	}
 
-	if err := s.repo.Create(note); err != nil {
-		return Note{}, err
+	note, err := s.repo.CreateNote(ctx, model)
+	if err != nil {
+		return note, errors.New("internal database error")
 	}
 
 	return note, nil

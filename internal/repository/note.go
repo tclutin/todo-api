@@ -43,6 +43,51 @@ func (n *noteRepository) CreateNote(ctx context.Context, entity note.Note) (note
 	n.logger.Info("sql query:", strings.ReplaceAll(sql, "\t", ""))
 
 	var note note.Note
+
+	err := row.Scan(&note.ID, &note.Name, &note.Content, &note.IsDone, &note.CreatedAt, &note.UpdateAt)
+	if err != nil {
+		n.logger.Error("the query was unsuccessful", err)
+		return note, err
+	}
+	n.logger.Info("the query was successful")
+	return note, nil
+}
+
+func (n *noteRepository) GetNoteById(ctx context.Context, id uint64) (note.Note, error) {
+	sql := `
+			SELECT * FROM todo
+			WHERE id = $1
+			
+			`
+
+	n.logger.Info("sql query:", strings.ReplaceAll(sql, "\t", ""))
+
+	row := n.client.QueryRow(ctx, sql, id)
+
+	var note note.Note
+
+	err := row.Scan(&note.ID, &note.Name, &note.Content, &note.IsDone, &note.CreatedAt, &note.UpdateAt)
+	if err != nil {
+		n.logger.Error("the query was unsuccessful", err)
+		return note, err
+	}
+	n.logger.Info("the query was successful")
+	return note, nil
+}
+
+func (n *noteRepository) UpdateNote(ctx context.Context, entity note.Note) (note.Note, error) {
+	sql := `
+			UPDATE todo
+			SET name = $1, content = $2, is_done = $3, updated_at = $4
+			WHERE id = $5
+			RETURNING *`
+
+	row := n.client.QueryRow(ctx, sql, entity.Name, entity.Content, entity.IsDone, entity.UpdateAt, entity.ID)
+
+	n.logger.Info("sql query:", strings.ReplaceAll(sql, "\t", ""))
+
+	var note note.Note
+
 	err := row.Scan(&note.ID, &note.Name, &note.Content, &note.IsDone, &note.CreatedAt, &note.UpdateAt)
 	if err != nil {
 		n.logger.Error("the query was unsuccessful", err)

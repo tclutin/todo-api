@@ -6,13 +6,15 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strconv"
 	"todo/internal/note"
 	custom "todo/pkg/http"
 )
 
 type NoteService interface {
 	CreateNote(context.Context, note.CreateNoteDTO) (note.Note, error)
-	Update(context.Context, note.UpdateNoteDTO) error
+	UpdateNote(context.Context, note.UpdateNoteDTO) (note.Note, error)
+	GetNoteByID(context.Context, uint64) (note.Note, error)
 }
 
 type Handler struct {
@@ -23,7 +25,7 @@ type Handler struct {
 func (h *Handler) InitNotesRoutes() *http.ServeMux {
 	router := http.NewServeMux()
 	router.HandleFunc("/note/create", h.CreateNote)
-	router.HandleFunc("/note/get/", h.GetNote)
+	router.HandleFunc("/note/get/", h.GetNoteByID)
 	router.HandleFunc("/notes", h.GetAllNotes)
 	router.HandleFunc("/note/delete/", h.DeleteNote)
 	router.HandleFunc("/note/update/", h.UpdateNote)
@@ -32,7 +34,6 @@ func (h *Handler) InitNotesRoutes() *http.ServeMux {
 
 func (h *Handler) CreateNote(writer http.ResponseWriter, request *http.Request) {
 	writer.Header().Set("Content-Type", "application/json")
-
 	if request.Method != http.MethodPost {
 		writer.WriteHeader(http.StatusMethodNotAllowed)
 		return
@@ -69,23 +70,32 @@ func (h *Handler) UpdateNote(writer http.ResponseWriter, request *http.Request) 
 		return
 	}
 
-	if err := h.noteService.Update(request.Context(), dto); err != nil {
+	defer request.Body.Close()
+
+	updated, err := h.noteService.UpdateNote(request.Context(), dto)
+	if err != nil {
+		h.logger.Error(err.Error())
 		custom.SendJSON[string](writer, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	custom.SendJSON[string](writer, http.StatusOK, "Successfully")
+	custom.SendJSON[note.Note](writer, http.StatusOK, updated)
 	return
 }
 
-func (h *Handler) GetNote(writer http.ResponseWriter, request *http.Request) {
+func (h *Handler) GetNoteByID(writer http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodGet {
 		writer.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 
 	id := request.URL.Query().Get("id")
-	fmt.Printf("%T\n", id)
+	value, err := strconv.ParseUint(id, 10, 64)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	fmt.Println(value)
 }
 
 func (h *Handler) GetAllNotes(writer http.ResponseWriter, request *http.Request) {

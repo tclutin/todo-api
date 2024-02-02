@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log/slog"
+	_ "net/http/pprof"
 	"os"
 	"todo/internal/app"
 	"todo/internal/config"

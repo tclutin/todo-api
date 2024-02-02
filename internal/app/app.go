@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 	"todo/internal/config"
+	"todo/internal/handler/middleware"
 )
 
 type App struct {
@@ -36,9 +37,11 @@ func (a *App) Shutdown() {
 
 func (a *App) startHTTP() {
 	a.logger.Info("Initial http server on", a.cfg.Host+":"+a.cfg.Port)
+
+	handler := middleware.Logging(a.router)
 	a.httpServer = &http.Server{
 		Addr:         a.cfg.Host + ":" + a.cfg.Port,
-		Handler:      a.router,
+		Handler:      handler,
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}

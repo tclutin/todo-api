@@ -4,15 +4,15 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
-	"todo/internal/note"
+	note2 "todo/internal/service/note"
 )
 
 type NoteService interface {
-	CreateNote(context.Context, note.CreateNoteDTO) (note.Note, error)
-	UpdateNote(context.Context, note.UpdateNoteDTO) (note.Note, error)
-	GetNoteByID(context.Context, uint64) (note.Note, error)
+	CreateNote(context.Context, note2.CreateNoteDTO) (note2.Note, error)
+	UpdateNote(context.Context, note2.UpdateNoteDTO) (note2.Note, error)
+	GetNoteByID(context.Context, uint64) (note2.Note, error)
 	DeleteNote(ctx context.Context, uint642 uint64) error
-	GetAllNotes(ctx context.Context) ([]note.Note, error)
+	GetAllNotes(ctx context.Context) ([]note2.Note, error)
 }
 
 type Handler struct {

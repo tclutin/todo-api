@@ -6,7 +6,7 @@ import (
 	"log"
 	"log/slog"
 	"strings"
-	"todo/internal/note"
+	"todo/internal/service/note"
 	"todo/pkg/client/postgresql"
 )
 

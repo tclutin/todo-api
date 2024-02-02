@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"todo/internal/note"
+	note2 "todo/internal/service/note"
 	custom "todo/pkg/http"
 )
 
@@ -16,7 +16,7 @@ func (h *Handler) CreateNote(writer http.ResponseWriter, request *http.Request) 
 		return
 	}
 
-	var dto note.CreateNoteDTO
+	var dto note2.CreateNoteDTO
 	if err := json.NewDecoder(request.Body).Decode(&dto); err != nil {
 		writer.WriteHeader(http.StatusBadRequest)
 		return
@@ -30,7 +30,7 @@ func (h *Handler) CreateNote(writer http.ResponseWriter, request *http.Request) 
 		return
 	}
 
-	custom.SendJSON[note.Note](writer, http.StatusCreated, created)
+	custom.SendJSON[note2.Note](writer, http.StatusCreated, created)
 	return
 }
 
@@ -41,7 +41,7 @@ func (h *Handler) UpdateNote(writer http.ResponseWriter, request *http.Request) 
 		return
 	}
 
-	var dto note.UpdateNoteDTO
+	var dto note2.UpdateNoteDTO
 	if err := json.NewDecoder(request.Body).Decode(&dto); err != nil {
 		writer.WriteHeader(http.StatusBadRequest)
 		return
@@ -56,7 +56,7 @@ func (h *Handler) UpdateNote(writer http.ResponseWriter, request *http.Request) 
 		return
 	}
 
-	custom.SendJSON[note.Note](writer, http.StatusOK, updated)
+	custom.SendJSON[note2.Note](writer, http.StatusOK, updated)
 	return
 }
 
@@ -80,7 +80,7 @@ func (h *Handler) GetNoteByID(writer http.ResponseWriter, request *http.Request)
 		custom.SendJSON[string](writer, http.StatusBadRequest, err.Error())
 		return
 	}
-	custom.SendJSON[note.Note](writer, http.StatusOK, got)
+	custom.SendJSON[note2.Note](writer, http.StatusOK, got)
 	return
 }
 
@@ -98,7 +98,7 @@ func (h *Handler) GetAllNotes(writer http.ResponseWriter, request *http.Request)
 		return
 	}
 
-	custom.SendJSON[[]note.Note](writer, http.StatusOK, notes)
+	custom.SendJSON[[]note2.Note](writer, http.StatusOK, notes)
 	return
 }
 

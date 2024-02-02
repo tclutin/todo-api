@@ -8,8 +8,8 @@ import (
 	"todo/internal/app"
 	"todo/internal/config"
 	"todo/internal/handler"
-	"todo/internal/note"
 	"todo/internal/repository"
+	"todo/internal/service/note"
 	"todo/pkg/client/postgresql"
 )
 

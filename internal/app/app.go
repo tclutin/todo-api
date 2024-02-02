@@ -37,7 +37,6 @@ func (a *App) Shutdown() {
 
 func (a *App) startHTTP() {
 	a.logger.Info("Initial http server on", a.cfg.Host+":"+a.cfg.Port)
-
 	handler := middleware.Logging(a.router)
 	a.httpServer = &http.Server{
 		Addr:         a.cfg.Host + ":" + a.cfg.Port,
